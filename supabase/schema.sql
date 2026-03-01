@@ -87,3 +87,15 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Usage Increment RPC
+create or replace function increment_response_usage(user_id_param uuid)
+returns void as $$
+begin
+  update public.profiles
+  set responses_used_this_month = responses_used_this_month + 1,
+      updated_at = now()
+  where id = user_id_param;
+end;
+$$ language plpgsql security definer;
+

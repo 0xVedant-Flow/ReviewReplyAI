@@ -62,26 +62,40 @@ export async function POST(req: NextRequest) {
         // Call Gemini AI Master Prompt
         const result = await generateReviewResponse(body);
 
-        // Increment Usage
-        await supabase.rpc('increment_response_usage', { user_id_param: userId });
+        // Increment Usage (RPC)
+        try {
+            const { error: rpcError } = await supabase.rpc('increment_response_usage', { user_id_param: userId });
+            if (rpcError) console.warn("Usage increment failed:", rpcError);
+        } catch (e) {
+            console.warn("Usage increment exception:", e);
+        }
 
         // Save History
-        await supabase.from('generations').insert({
-            user_id: userId,
-            review_text: body.review_text,
-            star_rating: body.star_rating,
-            platform: body.platform || "Unknown",
-            business_name: body.business_name,
-            tone_preference: body.tone_preference || "Auto",
-            language_detected: result.language_detection?.language,
-            sentiment: result.sentiment_analysis?.overall,
-            generated_responses: result.responses
-        });
+        try {
+            const { error: insertError } = await supabase.from('generations').insert({
+                user_id: userId,
+                review_text: body.review_text,
+                star_rating: body.star_rating,
+                platform: body.platform || "Unknown",
+                business_name: body.business_name,
+                tone_preference: body.tone_preference || "Auto",
+                language_detected: result.language_detection?.language,
+                sentiment: result.sentiment_analysis?.overall,
+                generated_responses: result.responses
+            });
+            if (insertError) console.warn("Save history failed:", insertError);
+        } catch (e) {
+            console.warn("Save history exception:", e);
+        }
 
         return NextResponse.json(result, { status: 200 });
 
     } catch (error: any) {
-        console.error('API Error:', error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        console.error('CRITICAL API ERROR:', error);
+        return NextResponse.json({
+            error: error.message || "Internal Server Error",
+            details: process.env.NODE_ENV === 'development' ? error : undefined
+        }, { status: 500 });
     }
 }
+
