@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateReviewResponse } from '@/lib/gemini';
+import { generateReviewResponse } from '@/lib/huggingface';
 import { createClient } from '@/lib/supabase/server';
 import { ReviewInput } from '@/types';
 

@@ -75,7 +75,6 @@ export function Sidebar() {
                     <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">— Account —</p>
                 </div>
 
-                <NavLink href="/dashboard/api-keys" icon={Key} label="API Keys" active={pathname.includes('api-keys')} isLocked={isFreePlan} />
                 <NavLink href="/dashboard/billing" icon={Receipt} label="Billing & Plan" active={pathname.includes('billing')} />
                 <NavLink href="/dashboard/settings" icon={Settings} label="Settings" active={pathname.includes('settings')} />
             </nav>
